@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝宝月龄计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f9f4ef;
+            color: #5d4037;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(#ffecd2 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(93, 64, 55, 0.1);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #ffb74d, #ff8a65, #f48fb1, #ce93d8);
+        }
+        h1 {
+            color: #e91e63;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 28px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .birth-info {
+            background-color: #ffebee;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .birth-info span {
+            font-weight: bold;
+            color: #c2185b;
+        }
+        .info-card {
+            background-color: #f3e5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(93, 64, 55, 0.1);
+        }
+        .info-card h2 {
+            color: #7b1fa2;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px dashed #e1bee7;
+            padding-bottom: 8px;
+        }
+        .info-item {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .info-item span {
+            font-weight: bold;
+            color: #4a148c;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #795548;
+        }
+        .heart {
+            color: #e91e63;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .current-time {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #616161;
+        }
+        .premature-note {
+            font-size: 14px;
+            color: #616161;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>宝宝月龄计算器 <span class="heart">❤</span></h1>
+        <div class="birth-info">
+            宝宝出生于：<span id="birth-date">2025年6月4日20:48</span><br>
+            出生孕周：<span id="birth-week">32周+5天</span>
+        </div>
+        <div class="current-time">
+            当前时间：<span id="current-time"></span>
+        </div>
+        <div class="info-card">
+            <h2>实际月龄</h2>
+            <div class="info-item">月龄：<span id="actual-age-months"></span> 个月 <span id="actual-age-days"></span> 天</div>
+            <div class="info-item">周龄：<span id="actual-age-weeks"></span> 周 <span id="actual-age-week-days"></span> 天</div>
+        </div>
+        <div class="info-card">
+            <h2>纠正月龄</h2>
+            <div class="info-item">月龄：<span id="corrected-age-months"></span> 个月 <span id="corrected-age-days"></span> 天</div>
+            <div class="info-item">周龄：<span id="corrected-age-weeks"></span> 周 <span id="corrected-age-week-days"></span> 天</div>
+            <div class="premature-note">* 纠正月龄基于40周足月计算</div>
+        </div>
+        <div class="info-card">
+            <h2>已出生时间</h2>
+            <div class="info-item">天数：<span id="total-days"></span> 天</div>
+            <div class="info-item">时间：<span id="total-hours"></span> 小时 <span id="total-minutes"></span> 分钟 <span id="total-seconds"></span> 秒</div>
+        </div>
+    </div>
+    <div class="footer">
+        👶 健康成长，快乐每一天 👶
+    </div>
+    <script>
+        // 宝宝出生信息
+        const birthDate = new Date(2025, 5, 4, 20, 48, 0); // 月份是0-indexed，所以6月是5
+        const birthWeeks = 32; // 出生孕周
+        const birthDays = 5;   // 出生额外天数
+
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            document.getElementById('current-time').textContent = now.toLocaleDateString('zh-CN', options);
+        }
+
+        // 计算月龄信息
+        function calculateAge() {
+            const now = new Date();
+            const diff = now - birthDate;
+
+            // 计算总秒数、分钟、小时、天数
+            const totalSeconds = Math.floor(diff / 1000);
+            const totalMinutes = Math.floor(totalSeconds / 60);
+            const totalHours = Math.floor(totalMinutes / 60);
+            const totalDays = Math.floor(totalHours / 24);
+
+            // 剩余的小时、分钟、秒
+            const remainingHours = totalHours % 24;
+            const remainingMinutes = totalMinutes % 60;
+            const remainingSeconds = totalSeconds % 60;
+
+            // 计算实际月龄（每月按30.44天计算，平均月长）
+            const averageMonthLength = 30.44;
+            const actualMonths = Math.floor(totalDays / averageMonthLength);
+            const actualDays = Math.floor(totalDays % averageMonthLength);
+
+            // 计算实际周龄
+            const actualWeeks = Math.floor(totalDays / 7);
+            const actualWeekDays = totalDays % 7;
+
+            // 计算纠正月龄（早产周数 = 40周 - 出生周数）
+            const prematureWeeks = 40 - birthWeeks - (birthDays / 7);
+            const prematureDays = Math.floor(prematureWeeks * 7);
+            const correctedTotalDays = Math.max(0, totalDays - prematureDays);
+
+            // 纠正月龄的月和天
+            const correctedMonths = Math.floor(correctedTotalDays / averageMonthLength);
+            const correctedDays = Math.floor(correctedTotalDays % averageMonthLength);
+
+            // 纠正周龄
+            const correctedWeeks = Math.floor(correctedTotalDays / 7);
+            const correctedWeekDays = correctedTotalDays % 7;
+
+            // 更新DOM
+            document.getElementById('actual-age-months').textContent = actualMonths;
+            document.getElementById('actual-age-days').textContent = actualDays;
+            document.getElementById('actual-age-weeks').textContent = actualWeeks;
+            document.getElementById('actual-age-week-days').textContent = actualWeekDays;
+
+            document.getElementById('corrected-age-months').textContent = correctedMonths;
+            document.getElementById('corrected-age-days').textContent = correctedDays;
+            document.getElementById('corrected-age-weeks').textContent = correctedWeeks;
+            document.getElementById('corrected-age-week-days').textContent = correctedWeekDays;
+
+            document.getElementById('total-days').textContent = totalDays;
+            document.getElementById('total-hours').textContent = remainingHours;
+            document.getElementById('total-minutes').textContent = remainingMinutes;
+            document.getElementById('total-seconds').textContent = remainingSeconds;
+        }
+
+        // 初始化并每秒更新
+        updateCurrentTime();
+        calculateAge();
+        setInterval(() => {
+            updateCurrentTime();
+            calculateAge();
+        }, 1000);
+    </script>
+</body>
+</html>
